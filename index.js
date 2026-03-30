@@ -1,30 +1,22 @@
 const scrapeJobs = require('./scrape');
+const filterJobs = require('./filter');
+const exportToCSV = require('./exportCsv');
 const fs = require('fs');
 
 async function runPipeline() {
-    try {
-        console.log("🔍 Scraping jobs...");
-        const jobs = await scrapeJobs();
+    console.log("Scraping jobs...");
+    const jobs = await scrapeJobs();
 
-        console.log(`✅ Scraped ${jobs.length} jobs`);
+    console.log(`Total scraped: ${jobs.length}`);
 
-        // Save raw data
-        fs.writeFileSync(
-            "raw_jobs.json",
-            JSON.stringify(jobs, null, 2)
-        );
+    const filtered = filterJobs(jobs);
+    console.log(`After filtering: ${filtered.length}`);
 
-        console.log("💾 Saved raw_jobs.json");
+    fs.writeFileSync("filtered_jobs.json", JSON.stringify(filtered, null, 2));
 
-        console.log("\n👉 NEXT STEP:");
-        console.log("1. Open raw_jobs.json");
-        console.log("2. Copy some/all data");
-        console.log("3. Paste into Claude");
-        console.log("4. Ask: filter + rank internships");
+    exportToCSV(filtered);
 
-    } catch (error) {
-        console.error("❌ Error:", error.message);
-    }
+    console.log("Done.");
 }
 
 runPipeline();
